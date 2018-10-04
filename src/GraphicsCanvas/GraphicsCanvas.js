@@ -14,6 +14,9 @@ class GraphicsCanvas {
         this.root.width = this.width;
         this.root.height = this.height;
 
+        this.root.style.position = 'absolute';
+        this.root.style.left = `calc(50% - ${this.width / 2}px)`;
+
         this.gl = this.root.getContext('webgl');
 
         if (this.gl === null || this.gl === undefined) {

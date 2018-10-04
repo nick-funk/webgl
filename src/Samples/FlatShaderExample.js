@@ -10,6 +10,7 @@ class FlatShaderExample
         this.refreshRateMs = refreshRateMs;
 
         this.rotationAngle = 0;
+        this.running = false;
     }
 
     initialize() {
@@ -46,10 +47,19 @@ class FlatShaderExample
     }
 
     run() {
+        this.running = true;
         this.update();
     }
 
+    stop() {
+        this.running = false;
+    }
+
     update() {
+        if (!this.running) {
+            return;
+        }
+
         this.canvas.clear();
         this.camera.apply(this.shader);
         this.renderer.run(
