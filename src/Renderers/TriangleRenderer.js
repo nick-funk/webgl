@@ -1,17 +1,33 @@
 import m4 from '../contrib/m4';
 
 class TriangleRenderer {
-    run(shader, vertices, colors, baseColor, translation, rotation) {
+    run(shader, vertices, uvs, colors, baseColor, baseColorAmount, translation, rotation) {
         var gl = shader.gl;
 
         this.applyRotation(shader, translation, rotation);
 
-        // color
-        shader.setFloat4("baseColor", [ baseColor.r, baseColor.g, baseColor.b, baseColor.a ]);
-        shader.setFloat('baseColorRatio', 0.5);
-
+        // verts
         shader.setFloatVertexAttribute('position', vertices, 3);
-        shader.setFloatVertexAttribute('color', colors, 4);
+
+        // baseColor
+        if (baseColor !== null && 
+            baseColor !== undefined && 
+            typeof(baseColorAmount) === 'number') 
+        {
+            shader.setFloat4('baseColor', [ baseColor.r, baseColor.g, baseColor.b, baseColor.a ]);
+            shader.setFloat('baseColorRatio', baseColorAmount);
+        }
+
+        // color
+        if (colors !== null && colors !== undefined) {
+            shader.setFloatVertexAttribute('color', colors, 4);
+        }
+
+        // uvs
+        if (uvs !== null && uvs !== undefined)
+        {
+            shader.setFloatVertexAttribute('uvs', uvs, 2);
+        }
 
         var primitiveType = gl.TRIANGLES;
         var offset = 0;

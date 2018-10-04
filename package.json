@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.config.js",
     "watch": "webpack --watch --info-verbosity verbose --config webpack.config.js"
@@ -22,5 +23,8 @@
     "webpack": "^4.19.1",
     "webpack-cli": "^3.1.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "connect": "^3.6.6",
+    "serve-static": "^1.13.2"
+  }
 }

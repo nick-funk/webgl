@@ -1,9 +1,9 @@
-import FlatShaderSource from '../Shaders/FlatShaderSource';
+import TexturedShaderSource from '../Shaders/TexturedShaderSource';
 import Shader from '../Shaders/Shader';
 import TriangleRenderer from '../Renderers/TriangleRenderer';
 import PerspectiveCamera from '../Cameras/PerspectiveCamera';
 
-class FlatShaderExample
+class TexturedShaderExample
 {
     constructor(canvas, refreshRateMs) {
         this.canvas = canvas;
@@ -14,7 +14,7 @@ class FlatShaderExample
     }
 
     initialize() {
-        this.shader = new Shader(this.canvas.gl, new FlatShaderSource());
+        this.shader = new Shader(this.canvas.gl, new TexturedShaderSource());
         this.shader.activate();
 
         var fieldOfView = 60.0 * Math.PI / 180.0;
@@ -38,10 +38,23 @@ class FlatShaderExample
             1, 0, 0, 1,
             0, 1, 0, 1,
             0, 0, 1, 1,
-            0, 0, 1, 1,
-            1, 1, 0, 1,
-            0, 1, 0, 1
+            1, 0, 0, 1,
+            0, 0, 0, 1,
+            0, 0, 1, 1
         ];
+
+        this.uvs = [
+            0, 1,
+            0, 0,
+            1, 1,
+            1, 1,
+            1, 0,
+            0, 0
+        ];
+
+        this.textureUrl = 'textures/Profile.png';
+        var texture = this.shader.loadTexture(this.textureUrl);
+        this.shader.setTexture2D(0, 'textureSampler', texture);
 
         this.renderer = new TriangleRenderer();
     }
@@ -65,10 +78,10 @@ class FlatShaderExample
         this.renderer.run(
             this.shader, 
             this.vertices,
+            this.uvs,
             null,
-            this.colors,
-            { r: 0, g: 0, b: 1, a: 1 },
-            0.25,
+            null,
+            null,
             { x: 0, y: -0.5, z: 0 },
             { x: 0, y: this.rotationAngle, z: 0 }
         );
@@ -79,4 +92,4 @@ class FlatShaderExample
     }
 }
 
-export default FlatShaderExample;
+export default TexturedShaderExample;

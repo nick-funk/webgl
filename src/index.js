@@ -1,7 +1,9 @@
 import GraphicsCanvas from './GraphicsCanvas/GraphicsCanvas';
 
-import './index.less';
 import FlatShaderExample from './Samples/FlatShaderExample';
+import TexturedShaderExample from './Samples/TexturedShaderExample';
+
+import './index.less';
 
 var currentProgram = null;
 
@@ -25,12 +27,22 @@ function main() {
 
     var flatShaderButton = document.createElement('div');
     flatShaderButton.classList.add('button');
-    flatShaderButton.innerHTML = "Flat Shader";
-
+    flatShaderButton.innerHTML = "Flat";
     flatShaderButton.addEventListener('click', () => {
         killProgram();
 
         currentProgram = new FlatShaderExample(canvas, 30);
+        currentProgram.initialize();
+        currentProgram.run();
+    });
+
+    var texturedShaderButton = document.createElement('div');
+    texturedShaderButton.classList.add('button');
+    texturedShaderButton.innerHTML = "Textured";
+    texturedShaderButton.addEventListener('click', () => {
+        killProgram();
+
+        currentProgram = new TexturedShaderExample(canvas, 30);
         currentProgram.initialize();
         currentProgram.run();
     });
@@ -41,6 +53,7 @@ function main() {
     controlPanel.style.left = `calc(50% - ${width / 2}px)`;
 
     controlPanel.appendChild(flatShaderButton);
+    controlPanel.appendChild(texturedShaderButton);
 
     var controlContainer = document.createElement('div');
     controlContainer.classList.add('control-container');

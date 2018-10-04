@@ -14,7 +14,8 @@ module.exports = {
     plugins: [
         new CopyPlugin(
         [
-            { from: './src/index.html', to: './', flatten: true }
+            { from: './src/index.html', to: './', flatten: true },
+            { from: './textures/*.*', to: 'textures/', flatten: true }
         ])
     ],
     module: {
@@ -29,7 +30,7 @@ module.exports = {
             },
             {
                 test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
+                exclude: /(node_modules|bower_components|server)/,
                 use: {
                     loader: 'babel-loader',
                     options: {

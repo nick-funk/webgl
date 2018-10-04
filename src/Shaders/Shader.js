@@ -42,6 +42,46 @@ class Shader {
         this.gl.deleteProgram(program);
     }
 
+    loadTexture(url) {
+        var gl = this.gl;
+
+        var texture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
+        var level = 0;
+        var internalFormat = this.gl.RGBA;
+        var width = 1;
+        var height = 1;
+        var border = 0;
+        var sourceFormat = this.gl.RGBA;
+        var sourceType = this.gl.UNSIGNED_BYTE;
+        var pixel = new Uint8Array([ 0, 0, 255, 255 ]);
+
+        this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, width, height, border, sourceFormat, sourceType, pixel);
+
+        var image = new Image();
+        image.onload = () => {
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, sourceFormat, sourceType, image);
+
+            if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
+                this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            }
+            else {
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+            }
+        };
+        image.src = url;
+
+        return texture;
+    }
+
+    isPowerOf2(value) {
+        return (value & (value - 1) == 0);
+    }
+
     activate() {
         this.gl.useProgram(this.program);
     }
@@ -81,6 +121,24 @@ class Shader {
         this.gl.vertexAttribPointer(
             attributeLocation, size, type, normalize, stride, offset
         );
+    }
+
+    setTexture2D(textureUnit, samplerName, texture) {
+        var target = this.getTextureTarget(textureUnit);
+
+        var sampler = this.gl.getUniformLocation(this.program, samplerName);
+
+        this.gl.activeTexture(target);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.gl.uniform1i(sampler, textureUnit);
+    }
+
+    getTextureTarget(textureUnit) {
+        if (textureUnit === 0) {
+            return this.gl.TEXTURE0;
+        }
+
+        return null;
     }
 }
 
