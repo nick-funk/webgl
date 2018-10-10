@@ -28,7 +28,7 @@ class SineShaderExample
 
         this.vertices = [];
 
-        var step = 0.05;
+        var step = 0.025;
         for (var x = 0; x <= 1; x += step) {
             for (var z = 0; z <= 1; z += step) {
                 this.vertices.push(x);
