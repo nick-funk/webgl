@@ -19,7 +19,8 @@ class SineShaderExample
 
         var fieldOfView = 60.0 * Math.PI / 180.0;
         this.camera = new PerspectiveCamera(
-            { x: 0, y: 0, z: 2 },
+            { x: 0, y: 0.5, z: 1 },
+            { x: 0.78, y: 0, z: 0 },
             this.canvas.width,
             this.canvas.height,
             fieldOfView
