@@ -2,6 +2,7 @@ import GraphicsCanvas from './GraphicsCanvas/GraphicsCanvas';
 
 import FlatShaderExample from './Samples/FlatShaderExample';
 import TexturedShaderExample from './Samples/TexturedShaderExample';
+import WaveShaderExample from './Samples/WaveShaderExample';
 
 import './index.less';
 
@@ -47,6 +48,17 @@ function main() {
         currentProgram.run();
     });
 
+    var waveShaderButton = document.createElement('div');
+    waveShaderButton.classList.add('button');
+    waveShaderButton.innerHTML = "Wave";
+    waveShaderButton.addEventListener('click', () => {
+        killProgram();
+
+        currentProgram = new WaveShaderExample(canvas, 30);
+        currentProgram.initialize();
+        currentProgram.run();
+    });
+
     var controlPanel = document.createElement('div');
     controlPanel.classList.add('control-panel');
     controlPanel.style.width = `${width}px`;
@@ -54,6 +66,7 @@ function main() {
 
     controlPanel.appendChild(flatShaderButton);
     controlPanel.appendChild(texturedShaderButton);
+    controlPanel.appendChild(waveShaderButton);
 
     var controlContainer = document.createElement('div');
     controlContainer.classList.add('control-container');

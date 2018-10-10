@@ -42,7 +42,7 @@ class Shader {
         this.gl.deleteProgram(program);
     }
 
-    loadTexture(url) {
+    loadTexture(url, clamped = true) {
         var gl = this.gl;
 
         var texture = this.gl.createTexture();
@@ -64,12 +64,19 @@ class Shader {
             this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
             this.gl.texImage2D(this.gl.TEXTURE_2D, level, internalFormat, sourceFormat, sourceType, image);
 
-            if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
-                this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            if (clamped) {
+                if (this.isPowerOf2(image.width) && this.isPowerOf2(image.height)) {
+                    this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                }
+                else {
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+                    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+                }
             }
             else {
-                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
-                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.TEXTURE_WRAP_S);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.TEXTURE_WRAP_T);
                 this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             }
         };
@@ -98,6 +105,10 @@ class Shader {
     setFloat4(name, value) {
         var location = this.getLocation(name);
         this.gl.uniform4fv(location, value);
+    }
+
+    setColor(name, r, g, b, a) {
+        this.setFloat4(name, [ r / 255, g / 255, b / 255, a / 255 ]);
     }
 
     setMatrix4(name, value) {
