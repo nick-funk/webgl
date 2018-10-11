@@ -10,7 +10,7 @@ class PerspectiveCamera {
         this.matrix = m4.xRotate(this.matrix, rotation.x);
         this.matrix = m4.yRotate(this.matrix, rotation.y);
         this.matrix = m4.zRotate(this.matrix, rotation.z);
-        this.matrix = m4.translate(this.matrix, -position.x, -position.y, -position.z);
+        this.matrix = m4.translate(this.matrix, position.x, position.y, position.z);
     }
 
     perspective() {

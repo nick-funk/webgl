@@ -18,12 +18,18 @@ class SineShaderExample
         this.shader.activate();
 
         var fieldOfView = 60.0 * Math.PI / 180.0;
+        var cameraPosition = { x: 0, y: -0.5, z: -1 };
         this.camera = new PerspectiveCamera(
-            { x: 0, y: 0.5, z: 1 },
+            cameraPosition,
             { x: 0.78, y: 0, z: 0 },
             this.canvas.width,
             this.canvas.height,
             fieldOfView
+        );
+
+        this.shader.setFloat3(
+            'cameraPosition', 
+            [ cameraPosition.x, cameraPosition.y, cameraPosition.z ]
         );
 
         this.vertices = [];
@@ -57,9 +63,19 @@ class SineShaderExample
             }
         }
 
-        this.noiseTextureUrl = 'textures/PerlinNoise.png';
-        var texture = this.shader.loadTexture(this.noiseTextureUrl, false);
+        this.shader.setFloat('spacing', step);
+
+        var noiseTextureUrl = 'textures/PerlinNoise.png';
+        var texture = this.shader.loadTexture(noiseTextureUrl, false);
         this.shader.setTexture2D(0, 'noiseSampler', texture);
+
+        var foamTextureUrl = 'textures/Foam.png';
+        var foamTexture = this.shader.loadTexture(foamTextureUrl, false);
+        this.shader.setTexture2D(1, 'foamSampler', foamTexture);
+
+        var foamNoiseUrl = 'textures/FoamNoise.png';
+        var foamNoiseTexture = this.shader.loadTexture(foamNoiseUrl, false);
+        this.shader.setTexture2D(2, 'foamNoiseSampler', foamNoiseTexture);
 
         this.renderer = new TriangleRenderer();
     }
@@ -85,9 +101,13 @@ class SineShaderExample
 
         this.shader.setFloat('elapsedMs', this.timer);
         this.shader.setFloat('bigWaveSpeed', 0.75);
-        this.shader.setFloat('bigWaveAmplitude', 0.15);
+        this.shader.setFloat('bigWaveAmplitude', 0.05);
         this.shader.setFloat('smallWaveSpeed', 0.05);
-        this.shader.setFloat('smallWaveAmplitude', 0.05);
+        this.shader.setFloat('smallWaveAmplitude', 0.025);
+        this.shader.setFloat('foamSpeed', 0.15);
+        this.shader.setFloat('foamScale', 1);
+        this.shader.setFloat('foamAmount', 0.45);
+
         this.shader.setFloat('width', 1);
 
         this.shader.setColor('lowColor', 1, 17, 26, 255);

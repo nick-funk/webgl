@@ -75,8 +75,8 @@ class Shader {
                 }
             }
             else {
-                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.TEXTURE_WRAP_S);
-                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.TEXTURE_WRAP_T);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.MIRRORED_REPEAT);
+                this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.MIRRORED_REPEAT);
                 this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
             }
         };
@@ -100,6 +100,16 @@ class Shader {
     setFloat(name, value) {
         var location = this.getLocation(name);
         this.gl.uniform1f(location, value);
+    }
+
+    setFloat2(name, value) {
+        var location = this.getLocation(name);
+        this.gl.uniform2fv(location, value);
+    }
+
+    setFloat3(name, value) {
+        var location = this.getLocation(name);
+        this.gl.uniform3fv(location, value);
     }
 
     setFloat4(name, value) {
@@ -145,11 +155,20 @@ class Shader {
     }
 
     getTextureTarget(textureUnit) {
-        if (textureUnit === 0) {
-            return this.gl.TEXTURE0;
+        switch(textureUnit) {
+            case 0:
+                return this.gl.TEXTURE0;
+            case 1:
+                return this.gl.TEXTURE1;
+            case 2:
+                return this.gl.TEXTURE2;
+            case 3:
+                return this.gl.TEXTURE3;
+            case 4:
+                return this.gl.TEXTURE4;
+            default:
+                return null;
         }
-
-        return null;
     }
 }
 
