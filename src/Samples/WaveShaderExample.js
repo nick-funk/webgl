@@ -35,8 +35,8 @@ class SineShaderExample
         this.vertices = [];
 
         var step = 0.025;
-        for (var x = 0; x <= 1; x += step) {
-            for (var z = 0; z <= 1; z += step) {
+        for (var x = -1; x <= 2; x += step) {
+            for (var z = -1; z <= 2; z += step) {
                 this.vertices.push(x);
                 this.vertices.push(0);
                 this.vertices.push(z);
@@ -103,7 +103,7 @@ class SineShaderExample
         this.shader.setFloat('bigWaveSpeed', 0.75);
         this.shader.setFloat('bigWaveAmplitude', 0.05);
         this.shader.setFloat('smallWaveSpeed', 0.05);
-        this.shader.setFloat('smallWaveAmplitude', 0.025);
+        this.shader.setFloat('smallWaveAmplitude', 0.05);
         this.shader.setFloat('foamSpeed', 0.15);
         this.shader.setFloat('foamScale', 1);
         this.shader.setFloat('foamAmount', 0.45);
