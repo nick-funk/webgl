@@ -13,6 +13,7 @@ class SineShaderSource {
 
             varying mediump vec3 normal;
             varying mediump vec3 viewPosition;
+            varying mediump float depth;
 
             float noiseHash(vec2 pos) {
                 float hash = dot(pos, vec2(127.1, 311.7));	
@@ -56,7 +57,8 @@ class SineShaderSource {
             }
 
             void main() {
-                float height = waveScale * getHeight(position.xyz);
+                float rawHeight = getHeight(position.xyz);
+                float height = waveScale * rawHeight;
                 float leftHeight = waveScale * getHeight(vec3(position.x + spacing, position.y, position.z));
                 float rightHeight = waveScale * getHeight(vec3(position.x, position.y, position.z + spacing));
 
@@ -71,6 +73,7 @@ class SineShaderSource {
 
                 normal = normalize(rawNormal);
                 viewPosition = adjustedPosition.xyz;
+                depth = rawHeight / 2.0;
 
                 gl_Position = camera * adjustedPosition;
             }
@@ -81,8 +84,10 @@ class SineShaderSource {
 
             varying mediump vec3 normal;
             varying mediump vec3 viewPosition;
+            varying mediump float depth;
 
-            uniform vec4 baseColor;
+            uniform vec4 depthColor;
+            uniform vec4 surfaceColor;
             uniform mediump vec3 cameraPosition;
             uniform vec3 lightPosition;
 
@@ -97,10 +102,10 @@ class SineShaderSource {
             }
 
             void main() {
-                float specularAmount = specularAmount(0.5, 1.0);
+                float specularAmount = specularAmount(0.6, 0.99);
 
                 gl_FragColor =
-                    baseColor +
+                    (depth * surfaceColor + (1.0 - depth) * depthColor) +
                     specularAmount * vec4(1, 1, 1, 1);
             }
         `;
