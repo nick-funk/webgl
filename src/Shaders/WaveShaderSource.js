@@ -1,19 +1,21 @@
 class SineShaderSource {
     constructor() {
         this.vertex = `
+            precision highp float;
+
             attribute vec4 position;
             attribute vec4 color;
 
             uniform mat4 camera;
             uniform mat4 modelMatrix;
             uniform float spacing;
-            uniform mediump float elapsedMs;
-            uniform mediump float waveSpeed;
-            uniform mediump float waveScale;
+            uniform float elapsedMs;
+            uniform float waveSpeed;
+            uniform float waveScale;
 
-            varying mediump vec3 normal;
-            varying mediump vec3 viewPosition;
-            varying mediump float depth;
+            varying vec3 normal;
+            varying vec3 viewPosition;
+            varying float depth;
 
             float noiseHash(vec2 pos) {
                 float hash = dot(pos, vec2(127.1, 311.7));	
@@ -62,9 +64,9 @@ class SineShaderSource {
                 float leftHeight = waveScale * getHeight(vec3(position.x + spacing, position.y, position.z));
                 float rightHeight = waveScale * getHeight(vec3(position.x, position.y, position.z + spacing));
 
-                vec4 adjustedPosition = modelMatrix * vec4(position.x, position.y + height, position.z, position.w);
-                vec4 leftPosition = modelMatrix * vec4(position.x + spacing, position.y + leftHeight, position.z, position.w);
-                vec4 rightPosition = modelMatrix * vec4(position.x, position.y + rightHeight, position.z + spacing, position.w);
+                vec4 adjustedPosition = modelMatrix * vec4(position.x, position.y + height, position.z, 1.0);
+                vec4 leftPosition = modelMatrix * vec4(position.x + spacing, position.y + leftHeight, position.z, 1.0);
+                vec4 rightPosition = modelMatrix * vec4(position.x, position.y + rightHeight, position.z + spacing, 1.0);
                 
                 vec3 rawNormal = cross(
                     leftPosition.xyz - adjustedPosition.xyz,
@@ -80,15 +82,15 @@ class SineShaderSource {
         `;
 
         this.fragment = `
-            precision mediump float;
+            precision highp float;
 
-            varying mediump vec3 normal;
-            varying mediump vec3 viewPosition;
-            varying mediump float depth;
+            varying vec3 normal;
+            varying vec3 viewPosition;
+            varying float depth;
 
             uniform vec4 depthColor;
             uniform vec4 surfaceColor;
-            uniform mediump vec3 cameraPosition;
+            uniform vec3 cameraPosition;
             uniform vec3 lightDirection;
 
             float specular(float specularCoeff, float shininess, vec3 normal, vec3 light) {
@@ -105,9 +107,6 @@ class SineShaderSource {
             }
 
             vec3 computeColor(vec3 pos, vec3 norm, vec3 light, vec3 eye) {
-                float fresnel = clamp(1.0 - dot(norm, -eye), 0.0, 1.0);
-                fresnel = pow(fresnel, 3.0) * 0.65;
-
                 vec3 diff = depthColor.rgb + diffuse(norm, light, 5.0) * 0.4 * surfaceColor.rgb;
                 vec3 spec = specular(0.5, 5.0, norm, light) * vec3(1.0, 1.0, 1.0);
 
