@@ -34,7 +34,7 @@ class SineShaderExample
 
         this.shader.setFloat3(
             'lightDirection',
-            [ 0.5, 0.5, 0 ]
+            [ 0.5, -0.5, 0 ]
         );
 
         this.vertices = [];
