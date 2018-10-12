@@ -89,24 +89,37 @@ class SineShaderSource {
             uniform vec4 depthColor;
             uniform vec4 surfaceColor;
             uniform mediump vec3 cameraPosition;
-            uniform vec3 lightPosition;
+            uniform vec3 lightDirection;
 
-            float specularAmount(float specularCoeff, float shininess) {
+            float specular(float specularCoeff, float shininess, vec3 normal, vec3 light) {
                 vec3 viewRay = normalize(cameraPosition - viewPosition);
-                vec3 lightRay = normalize(lightPosition - viewPosition);
-                vec3 reflectedRay = (2.0 * dot(lightRay, viewRay) * normal) - lightRay;
+                vec3 reflectedRay = 2.0 * dot(light, normal) * normal - light;
 
                 float specular = specularCoeff * pow(dot(reflectedRay, viewRay), shininess);
 
                 return clamp(specular, 0.0, 9999.9);
             }
 
+            float diffuse(vec3 norm, vec3 light, float power) {
+                return pow(dot(light, norm), power);
+            }
+
+            vec3 computeColor(vec3 pos, vec3 norm, vec3 light, vec3 eye) {
+                float fresnel = clamp(1.0 - dot(norm, -eye), 0.0, 1.0);
+                fresnel = pow(fresnel, 3.0) * 0.65;
+
+                vec3 diff = depthColor.rgb + diffuse(norm, light, 5.0) * 0.4 * surfaceColor.rgb;
+                vec3 spec = specular(0.5, 5.0, norm, light) * vec3(1.0, 1.0, 1.0);
+
+                return diff + spec;
+            }
+
             void main() {
-                float specularAmount = specularAmount(0.6, 0.99);
+                vec3 light = normalize(lightDirection);
+                vec3 color = computeColor(viewPosition, normal, light, cameraPosition);
 
                 gl_FragColor =
-                    (depth * surfaceColor + (1.0 - depth) * depthColor) +
-                    specularAmount * vec4(1, 1, 1, 1);
+                    vec4(color.r, color.g, color.b, 1.0);
             }
         `;
     }
