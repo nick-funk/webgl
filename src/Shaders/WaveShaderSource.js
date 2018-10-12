@@ -6,112 +6,102 @@ class SineShaderSource {
 
             uniform mat4 camera;
             uniform mat4 modelMatrix;
-            uniform float width;
             uniform float spacing;
             uniform mediump float elapsedMs;
-            uniform mediump float bigWaveSpeed;
-            uniform mediump float bigWaveAmplitude;
-            uniform mediump float smallWaveSpeed;
-            uniform mediump float smallWaveAmplitude;
-            uniform mediump float foamSpeed;
-            uniform mediump float foamScale;
-            uniform sampler2D noiseSampler;
+            uniform mediump float waveSpeed;
+            uniform mediump float waveScale;
 
-            varying mediump float colorIntensity;
             varying mediump vec3 normal;
             varying mediump vec3 viewPosition;
-            varying mediump vec2 foamUV;
-            varying mediump vec2 foamNoiseUV;
 
-            float getBigWaveOffset(vec3 pos) {
-                return bigWaveAmplitude * cos(pos.x + bigWaveSpeed * (elapsedMs / 1000.0));
+            float noiseHash(vec2 pos) {
+                float hash = dot(pos, vec2(127.1, 311.7));	
+                return fract(sin(hash) * 43758.5453123);
             }
 
-            vec4 getBigWave(vec3 pos) {
-                float bigWaveOffset = getBigWaveOffset(pos);
-
-                return vec4(0, bigWaveOffset, 0, 0);
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);	
+                vec2 u = f * f * (3.0 - 2.0 * f);
+                return -1.0 + 2.0 * 
+                    mix(
+                        mix(noiseHash(i + vec2(0.0, 0.0)), 
+                            noiseHash(i + vec2(1.0, 0.0)), 
+                            u.x),
+                        mix(noiseHash(i + vec2(0.0, 1.0)), 
+                            noiseHash(i + vec2(1.0, 1.0)), 
+                            u.x), 
+                    u.y);
             }
 
-            vec4 getSmallWaveSample(vec3 pos) {
-                float smallWaveStep = smallWaveSpeed * (elapsedMs / 1000.0);
-                vec4 smallWaveSample = texture2D(noiseSampler, vec2(smallWaveStep + pos.x / width, pos.z / width));
+            float getHeight(vec3 pos) {
+                float time = elapsedMs / 1000.0;
+                float height = 0.0;
+                float sampleScale = 1.0;
+                float heightScale = 1.0;
 
-                return smallWaveSample;
-            }
+                for (int i = 0; i < 8; i++) {
+                    vec2 coords = vec2(
+                        sampleScale * (pos.x + time * waveSpeed),
+                        sampleScale * (pos.z + time * waveSpeed)
+                    );
+                    float sample = noise(coords);
+                    height += heightScale * sample;
 
-            vec4 getSmallWave(vec3 pos) {
-                vec4 smallWaveSample = getSmallWaveSample(pos);
+                    sampleScale *= 2.0;
+                    heightScale /= 2.0;
+                }
 
-                return vec4(0, smallWaveAmplitude * smallWaveSample.r, 0, 0);
-            }
-
-            vec4 getPosition(vec3 pos) {
-                vec4 bigWave = getBigWave(pos);
-                vec4 smallWave = getSmallWave(pos);
-
-                return bigWave + smallWave;
-            }
-
-            vec3 getNormal(vec3 pos, float spacing) {
-                vec4 center = getPosition(pos);
-                vec4 left = getPosition(vec3(pos.x, pos.y, pos.z + spacing));
-                vec4 right = getPosition(vec3(pos.x + spacing, pos.y, pos.z));
-
-                vec3 normal = normalize(cross(left.xyz - pos, right.xyz - pos));
-
-                return normal;
+                return height;
             }
 
             void main() {
-                vec4 bigWave = getBigWave(position.xyz);
-                vec4 smallWave = getSmallWave(position.xyz);
+                float height = waveScale * getHeight(position.xyz);
+                float leftHeight = waveScale * getHeight(vec3(position.x + spacing, position.y, position.z));
+                float rightHeight = waveScale * getHeight(vec3(position.x, position.y, position.z + spacing));
 
-                vec4 offset = bigWave + smallWave;
-                vec4 transformPosition = modelMatrix * (position + offset);
+                vec4 adjustedPosition = modelMatrix * vec4(position.x, position.y + height, position.z, position.w);
+                vec4 leftPosition = modelMatrix * vec4(position.x + spacing, position.y + leftHeight, position.z, position.w);
+                vec4 rightPosition = modelMatrix * vec4(position.x, position.y + rightHeight, position.z + spacing, position.w);
+                
+                vec3 rawNormal = cross(
+                    leftPosition.xyz - adjustedPosition.xyz,
+                    rightPosition.xyz - adjustedPosition.xyz
+                );
 
-                colorIntensity = smallWave.y / smallWaveAmplitude;
-                normal = getNormal(position.xyz, spacing);
-                viewPosition = transformPosition.xyz;
-                foamUV = vec2(position.x / width, position.z / width);
-                foamNoiseUV = vec2(foamSpeed * (elapsedMs / 1000.0) + (foamScale * position.x / width), foamScale * position.z / width);
+                normal = normalize(rawNormal);
+                viewPosition = adjustedPosition.xyz;
 
-                gl_Position = camera * transformPosition;
+                gl_Position = camera * adjustedPosition;
             }
         `;
 
         this.fragment = `
             precision mediump float;
 
-            varying mediump float colorIntensity;
             varying mediump vec3 normal;
             varying mediump vec3 viewPosition;
-            varying mediump vec2 foamUV;
-            varying mediump vec2 foamNoiseUV;
 
-            uniform vec4 lowColor;
-            uniform vec4 highColor;
+            uniform vec4 baseColor;
             uniform mediump vec3 cameraPosition;
-            uniform sampler2D foamSampler;
-            uniform sampler2D foamNoiseSampler;
-            uniform mediump float foamAmount;
+            uniform vec3 lightPosition;
+
+            float specularAmount(float specularCoeff, float shininess) {
+                vec3 viewRay = normalize(cameraPosition - viewPosition);
+                vec3 lightRay = normalize(lightPosition - viewPosition);
+                vec3 reflectedRay = (2.0 * dot(lightRay, viewRay) * normal) - lightRay;
+
+                float specular = specularCoeff * pow(dot(reflectedRay, viewRay), shininess);
+
+                return clamp(specular, 0.0, 9999.9);
+            }
 
             void main() {
-                float lightAngle = dot(normalize(cameraPosition - viewPosition), normal);
+                float specularAmount = specularAmount(0.5, 1.0);
 
-                vec4 foamSample = texture2D(foamSampler, foamUV);
-                vec4 foamNoiseSample = texture2D(foamNoiseSampler, foamNoiseUV);
-
-                float cutOff = 0.01;
-                bool sparkle = lightAngle <= 0.0 && lightAngle >= -cutOff;
-
-                float baseColorRatio = sparkle ? 0.1 : 1.0;
-                float lightRatio = sparkle ? 1.0: 0.0;
-
-                gl_FragColor = 
-                    baseColorRatio * (colorIntensity * highColor + (1.0 - colorIntensity) * lowColor) + 
-                    foamNoiseSample.r * foamAmount * foamSample +
-                    lightRatio * vec4(1, 1, 1, 1);
+                gl_FragColor =
+                    baseColor +
+                    specularAmount * vec4(1, 1, 1, 1);
             }
         `;
     }
