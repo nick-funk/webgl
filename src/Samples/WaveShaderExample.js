@@ -96,7 +96,8 @@ class SineShaderExample
         this.shader.setFloat('waveSpeed', 0.25);
         this.shader.setFloat('waveScale', 0.2);
 
-        this.shader.setColor('baseColor', 33, 93, 129, 255);
+        this.shader.setColor('depthColor', 33, 93, 129, 255);
+        this.shader.setColor('surfaceColor', 95, 158, 160, 255);
 
         this.renderer.run(
             this.shader,
