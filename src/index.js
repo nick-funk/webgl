@@ -15,16 +15,9 @@ function killProgram() {
 }
 
 function main() {
-    var width = 1024;
-    var height = 768;
-    var canvas = new GraphicsCanvas(width, height);
+    var canvas = new GraphicsCanvas();
 
-    var canvasContainer = document.createElement('div');
-    canvasContainer.classList.add('canvas-container');
-    canvasContainer.appendChild(canvas.root);
-    canvasContainer.style.height = `${height}px`;
-
-    document.body.appendChild(canvasContainer);
+    document.body.appendChild(canvas.root);
 
     var flatShaderButton = document.createElement('div');
     flatShaderButton.classList.add('button');
@@ -61,18 +54,12 @@ function main() {
 
     var controlPanel = document.createElement('div');
     controlPanel.classList.add('control-panel');
-    controlPanel.style.width = `${width}px`;
-    controlPanel.style.left = `calc(50% - ${width / 2}px)`;
 
     controlPanel.appendChild(flatShaderButton);
     controlPanel.appendChild(texturedShaderButton);
     controlPanel.appendChild(waveShaderButton);
 
-    var controlContainer = document.createElement('div');
-    controlContainer.classList.add('control-container');
-    controlContainer.appendChild(controlPanel);
-
-    document.body.appendChild(controlContainer);
+    document.body.appendChild(controlPanel);
 }
 
 window.addEventListener('load', () => {
