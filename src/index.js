@@ -15,8 +15,8 @@ function killProgram() {
 }
 
 function main() {
-    var width = 640;
-    var height = 480;
+    var width = 1024;
+    var height = 768;
     var canvas = new GraphicsCanvas(width, height);
 
     var canvasContainer = document.createElement('div');
@@ -54,7 +54,7 @@ function main() {
     waveShaderButton.addEventListener('click', () => {
         killProgram();
 
-        currentProgram = new WaveShaderExample(canvas, 30);
+        currentProgram = new WaveShaderExample(canvas, 24);
         currentProgram.initialize();
         currentProgram.run();
     });

@@ -17,45 +17,78 @@ class SineShaderSource {
             varying vec3 viewPosition;
             varying float depth;
 
-            float noiseHash(vec2 pos) {
-                float hash = dot(pos, vec2(127.1, 311.7));	
-                return fract(sin(hash) * 43758.5453123);
+            float noiseHash(vec2 pos, vec2 seed) {
+                float hash = dot(pos, seed);	
+                return fract(sin(hash) * 988776.655443);
             }
 
-            float noise(vec2 p) {
+            float noise(vec2 p, vec2 seed) {
                 vec2 i = floor(p);
                 vec2 f = fract(p);	
                 vec2 u = f * f * (3.0 - 2.0 * f);
                 return -1.0 + 2.0 * 
                     mix(
-                        mix(noiseHash(i + vec2(0.0, 0.0)), 
-                            noiseHash(i + vec2(1.0, 0.0)), 
+                        mix(noiseHash(i + vec2(0.0, 0.0), seed), 
+                            noiseHash(i + vec2(1.0, 0.0), seed), 
                             u.x),
-                        mix(noiseHash(i + vec2(0.0, 1.0)), 
-                            noiseHash(i + vec2(1.0, 1.0)), 
+                        mix(noiseHash(i + vec2(0.0, 1.0), seed), 
+                            noiseHash(i + vec2(1.0, 1.0), seed), 
                             u.x), 
                     u.y);
             }
 
-            float getHeight(vec3 pos) {
+            float computeNoise(vec3 pos, vec2 dir, vec2 seed, float time, float speed, float sampleScale, float heightScale) {
+                vec2 coords = vec2(
+                    dir.x * sampleScale * (pos.x + time * speed),
+                    dir.y * sampleScale * (pos.z + time * speed)
+                );
+
+                float sample = noise(coords, seed);
+                return heightScale * sample;
+            }
+
+            float layerNoise8(vec3 pos, vec2 dir, vec2 seed, float scale, float speed) {
                 float time = elapsedMs / 1000.0;
                 float height = 0.0;
                 float sampleScale = 1.0;
                 float heightScale = 1.0;
 
                 for (int i = 0; i < 8; i++) {
-                    vec2 coords = vec2(
-                        sampleScale * (pos.x + time * waveSpeed),
-                        sampleScale * (pos.z + time * waveSpeed)
-                    );
-                    float sample = noise(coords);
-                    height += heightScale * sample;
+                    float sample = computeNoise(pos, dir, seed, time, speed, sampleScale, heightScale);
+                    height += sample;
 
-                    sampleScale *= 2.0;
-                    heightScale /= 2.0;
+                    sampleScale *= scale;
+                    heightScale /= scale;
                 }
 
                 return height;
+            }
+
+            float layerNoise3(vec3 pos, vec2 dir, vec2 seed, float scale, float speed) {
+                float time = elapsedMs / 1000.0;
+                float height = 0.0;
+                float sampleScale = 1.0;
+                float heightScale = 1.0;
+
+                for (int i = 0; i < 3; i++) {
+                    float sample = computeNoise(pos, dir, seed, time, speed, sampleScale, heightScale);
+                    height += sample;
+
+                    sampleScale *= scale;
+                    heightScale /= scale;
+                }
+
+                return height;
+            }
+
+            float getHeight(vec3 pos) {
+                vec2 detailSeed = vec2(74.2, 431.2);
+                float detailHeight = 0.5 * layerNoise8(pos, vec2(-1.0, -1.0), detailSeed, 2.0, waveSpeed / 4.0);
+
+                vec2 grossSeed = vec2(191.5, 1337.0);
+                float grossHeight = 0.5 * layerNoise3(pos, vec2(-1.0, -1.0), grossSeed, 1.5, waveSpeed);
+
+                return grossHeight + detailHeight;
             }
 
             void main() {
@@ -92,6 +125,8 @@ class SineShaderSource {
             uniform vec4 surfaceColor;
             uniform vec3 cameraPosition;
             uniform vec3 lightDirection;
+            uniform float specularCoeff;
+            uniform float specularPower;
 
             float specular(float specularCoeff, float shininess, vec3 normal, vec3 light) {
                 vec3 viewRay = normalize(cameraPosition - viewPosition);
@@ -108,7 +143,7 @@ class SineShaderSource {
 
             vec3 computeColor(vec3 pos, vec3 norm, vec3 light, vec3 eye) {
                 vec3 diff = depthColor.rgb + diffuse(norm, light, 5.0) * 0.4 * surfaceColor.rgb;
-                vec3 spec = specular(0.5, 5.0, norm, light) * vec3(1.0, 1.0, 1.0);
+                vec3 spec = specular(specularCoeff, specularPower, norm, light) * vec3(1.0, 1.0, 1.0);
 
                 return diff + spec;
             }

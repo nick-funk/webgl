@@ -18,7 +18,7 @@ class SineShaderExample
         this.shader.activate();
 
         var fieldOfView = 60.0 * Math.PI / 180.0;
-        var cameraPosition = { x: 0, y: -1, z: -2 };
+        var cameraPosition = { x: 0, y: -1, z: -1.75 };
         this.camera = new PerspectiveCamera(
             cameraPosition,
             { x: 0.78, y: 0, z: 0 },
@@ -39,9 +39,11 @@ class SineShaderExample
 
         this.vertices = [];
 
-        var step = 0.05;
-        for (var x = -1; x <= 2; x += step) {
-            for (var z = -1; z <= 2; z += step) {
+        var width = 2.0;
+        var density = 384;
+        var step = width / density;
+        for (var x = -(width / 2); x <= (width / 2); x += step) {
+            for (var z = -(width / 2); z <= (width / 2); z += step) {
                 this.vertices.push(x);
                 this.vertices.push(0);
                 this.vertices.push(z);
@@ -90,14 +92,17 @@ class SineShaderExample
         this.canvas.clear();
         this.camera.apply(this.shader);
 
-        this.timer += 30;
+        this.timer += this.refreshRateMs;
 
         this.shader.setFloat('elapsedMs', this.timer);
-        this.shader.setFloat('waveSpeed', 0.25);
+        this.shader.setFloat('waveSpeed', 0.5);
         this.shader.setFloat('waveScale', 0.2);
 
         this.shader.setColor('depthColor', 33, 93, 129, 255);
         this.shader.setColor('surfaceColor', 95, 158, 160, 255);
+
+        this.shader.setFloat('specularCoeff', 0.75);
+        this.shader.setFloat('specularPower', 5.0);
 
         this.renderer.run(
             this.shader,
@@ -106,7 +111,7 @@ class SineShaderExample
             null,
             null,
             null,
-            { x: -0.75, y: -0.5, z: 0 },
+            { x: 0, y: -0.5, z: 0 },
             { x: 0, y: 0.78, z: 0 }
         );
 
