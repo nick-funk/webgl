@@ -1,16 +1,16 @@
+import GameLoop from './GameLoop';
 import WaveShaderSource from '../Shaders/WaveShaderSource';
 import Shader from '../Shaders/Shader';
 import TriangleRenderer from '../Renderers/TriangleRenderer';
 import PerspectiveCamera from '../Cameras/PerspectiveCamera';
 
-class SineShaderExample
+class SineShaderExample extends GameLoop
 {
     constructor(canvas, refreshRateMs) {
-        this.canvas = canvas;
-        this.refreshRateMs = refreshRateMs;
+        super(canvas, refreshRateMs);
 
-        this.running = false;
         this.timer = 0;
+        this.camera = null;
     }
 
     initialize() {
@@ -73,15 +73,6 @@ class SineShaderExample
         this.shader.setFloat('spacing', step);
 
         this.renderer = new TriangleRenderer();
-    }
-
-    run() {
-        this.running = true;
-        this.update();
-    }
-
-    stop() {
-        this.running = false;
     }
 
     update() {

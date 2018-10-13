@@ -1,16 +1,15 @@
+import GameLoop from './GameLoop';
 import FlatShaderSource from '../Shaders/FlatShaderSource';
 import Shader from '../Shaders/Shader';
 import TriangleRenderer from '../Renderers/TriangleRenderer';
 import PerspectiveCamera from '../Cameras/PerspectiveCamera';
 
-class FlatShaderExample
+class FlatShaderExample extends GameLoop
 {
     constructor(canvas, refreshRateMs) {
-        this.canvas = canvas;
-        this.refreshRateMs = refreshRateMs;
+        super(canvas, refreshRateMs);
 
         this.rotationAngle = 0;
-        this.running = false;
     }
 
     initialize() {
@@ -45,15 +44,6 @@ class FlatShaderExample
         ];
 
         this.renderer = new TriangleRenderer();
-    }
-
-    run() {
-        this.running = true;
-        this.update();
-    }
-
-    stop() {
-        this.running = false;
     }
 
     update() {

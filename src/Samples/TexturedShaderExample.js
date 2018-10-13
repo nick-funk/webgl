@@ -1,16 +1,15 @@
+import GameLoop from './GameLoop';
 import TexturedShaderSource from '../Shaders/TexturedShaderSource';
 import Shader from '../Shaders/Shader';
 import TriangleRenderer from '../Renderers/TriangleRenderer';
 import PerspectiveCamera from '../Cameras/PerspectiveCamera';
 
-class TexturedShaderExample
+class TexturedShaderExample extends GameLoop
 {
     constructor(canvas, refreshRateMs) {
-        this.canvas = canvas;
-        this.refreshRateMs = refreshRateMs;
+        super(canvas, refreshRateMs);
 
         this.rotationAngle = 0;
-        this.running = false;
     }
 
     initialize() {
@@ -58,15 +57,6 @@ class TexturedShaderExample
         this.shader.setTexture2D(0, 'textureSampler', texture);
 
         this.renderer = new TriangleRenderer();
-    }
-
-    run() {
-        this.running = true;
-        this.update();
-    }
-
-    stop() {
-        this.running = false;
     }
 
     update() {
