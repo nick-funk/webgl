@@ -97,9 +97,9 @@ class SineShaderSource {
                 float leftHeight = waveScale * getHeight(vec3(position.x + spacing, position.y, position.z));
                 float rightHeight = waveScale * getHeight(vec3(position.x, position.y, position.z + spacing));
 
-                vec4 adjustedPosition = modelMatrix * vec4(position.x, position.y + height, position.z, 1.0);
-                vec4 leftPosition = modelMatrix * vec4(position.x + spacing, position.y + leftHeight, position.z, 1.0);
-                vec4 rightPosition = modelMatrix * vec4(position.x, position.y + rightHeight, position.z + spacing, 1.0);
+                vec4 adjustedPosition = modelMatrix * vec4(position.x, position.y + height, position.z, position.w);
+                vec4 leftPosition = modelMatrix * vec4(position.x + spacing, position.y + leftHeight, position.z, position.w);
+                vec4 rightPosition = modelMatrix * vec4(position.x, position.y + rightHeight, position.z + spacing, position.w);
                 
                 vec3 rawNormal = cross(
                     leftPosition.xyz - adjustedPosition.xyz,
@@ -108,7 +108,7 @@ class SineShaderSource {
 
                 normal = normalize(rawNormal);
                 viewPosition = adjustedPosition.xyz;
-                depth = rawHeight / 2.0;
+                depth = height - position.y;
 
                 gl_Position = camera * adjustedPosition;
             }
@@ -141,19 +141,40 @@ class SineShaderSource {
                 return pow(dot(light, norm), power);
             }
 
-            vec3 computeColor(vec3 pos, vec3 norm, vec3 light, vec3 eye) {
-                vec3 diff = depthColor.rgb + diffuse(norm, light, 5.0) * 0.4 * surfaceColor.rgb;
-                vec3 spec = specular(specularCoeff, specularPower, norm, light) * vec3(1.0, 1.0, 1.0);
+            vec3 reflection(vec3 cameraPos, vec3 norm) {
+                float refl = max(reflect(cameraPos, norm).y, 0.0);
+                float intensity = pow(1.0 - refl, 3.0);
 
-                return diff + spec;
+                return vec3(intensity, intensity, intensity);
+            }
+
+            float fresnel(vec3 pos, vec3 camera, vec3 norm) {
+                vec3 viewRay = camera - pos;
+                float fresnel = clamp(1.0 - dot(norm, viewRay), 0.0, 1.0);
+                fresnel = pow(fresnel, 3.0) * 0.5;
+
+                return fresnel;
+            }
+
+            vec4 computeColor(vec3 pos, vec3 norm, vec3 light, vec3 cameraPos) {
+                float fresnel = fresnel(pos, cameraPos, norm);
+
+                vec3 reflected = reflection(cameraPos, norm);
+                vec3 diff = depthColor.rgb + diffuse(norm, light, 5.0) * surfaceColor.rgb * 0.4;
+
+                vec3 color = mix(diff, reflected, fresnel);
+
+                float specularAmount = specular(specularCoeff, specularPower, norm, light);
+                vec3 specular = 0.75 * specularAmount * vec3(1.0, 1.0, 1.0);
+
+                float alpha = 1.0;
+
+                return vec4(color.r, color.g, color.b, alpha) + vec4(specular.r, specular.g, specular.b, alpha);
             }
 
             void main() {
                 vec3 light = normalize(lightDirection);
-                vec3 color = computeColor(viewPosition, normal, light, cameraPosition);
-
-                gl_FragColor =
-                    vec4(color.r, color.g, color.b, 1.0);
+                gl_FragColor = computeColor(viewPosition, normal, light, cameraPosition);
             }
         `;
     }

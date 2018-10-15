@@ -14,12 +14,14 @@ class GraphicsCanvas {
         window.addEventListener('resize', this.onResizeDelegate);
         this.onResize();
 
-        this.gl = this.root.getContext('webgl');
+        this.gl = this.root.getContext('webgl', { premultipliedAlpha: false });
 
         if (this.gl === null || this.gl === undefined) {
             console.warn('Unable to initialize WebGL. Your browser or machine may not support it.');
         }
         else {
+            this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+
             this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
             this.gl.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
             this.gl.clear(this.gl.COLOR_BUFFER_BIT);
