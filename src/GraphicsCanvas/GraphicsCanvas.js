@@ -41,8 +41,6 @@ class GraphicsCanvas {
         this.root.width = size;
         this.root.height = size;
 
-        this.root.style.left = (window.innerWidth / 2.0) - (size / 2.0);
-
         if (this.gl !== null && this.gl !== undefined) {
             this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
         }
