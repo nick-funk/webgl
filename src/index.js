@@ -6,6 +6,7 @@ import WaveShaderExample from './Samples/WaveShaderExample';
 
 import './index.less';
 
+var canvas = null;
 var currentProgram = null;
 
 function killProgram() {
@@ -14,8 +15,16 @@ function killProgram() {
     }
 }
 
+function loadWaveProgram() {
+    killProgram();
+
+    currentProgram = new WaveShaderExample(canvas, 24);
+    currentProgram.initialize();
+    currentProgram.run();
+}
+
 function main() {
-    var canvas = new GraphicsCanvas();
+    canvas = new GraphicsCanvas();
 
     document.body.appendChild(canvas.root);
 
@@ -45,11 +54,7 @@ function main() {
     waveShaderButton.classList.add('button');
     waveShaderButton.innerHTML = "Wave";
     waveShaderButton.addEventListener('click', () => {
-        killProgram();
-
-        currentProgram = new WaveShaderExample(canvas, 24);
-        currentProgram.initialize();
-        currentProgram.run();
+        loadWaveProgram();
     });
 
     var controlPanel = document.createElement('div');
@@ -60,6 +65,8 @@ function main() {
     controlPanel.appendChild(waveShaderButton);
 
     document.body.appendChild(controlPanel);
+
+    loadWaveProgram();
 }
 
 window.addEventListener('load', () => {
